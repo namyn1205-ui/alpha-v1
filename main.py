@@ -190,31 +190,36 @@ def get_welcome_page(mode="login", error=""):
             .btn-go {{
                 width: 100%; padding: 18px; border-radius: 20px; border: none;
                 background: linear-gradient(45deg, #f39c12, #e67e22); color: #000;
-                font-weight: 900; font-size: 18px; cursor: pointer; margin-top: 15px;
-            }}
-            .switch {{ margin-top: 25px; color: rgba(255,255,255,0.5); font-size: 14px; }}
-            .switch a {{ color: #f39c12; text-decoration: none; font-weight: bold; }}
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <div style="width:70px; height:70px; background:rgba(243,156,18,0.1); border-radius:22px; display:flex; align-items:center; justify-content:center; margin: 0 auto 25px; border:1px solid #f39c12;">
-                <i class="fas fa-spider" style="font-size:35px; color:#f39c12;"></i>
-            </div>
-            <h2>{title}</h2>
-            {error_tag}
-            <form action="/{'auth' if is_login else 'register'}" method="GET">
-                <input type="hidden" name="mode" value="{mode}">
-                {fields}
-                <button type="submit" class="btn-go">{'دخول مباشر' if is_login else 'إنشاء حساب'}</button>
-            </form>
-            <div class="switch">
-                { 'ليس لديك حساب؟ <a href="/?mode=reg">سجل الآن</a>' if is_login else 'تملك حساباً؟ <a href="/?mode=login">سجل دخولك</a>' }
-            </div>
+# --- [ 4. الواجهات ] ---
+def get_welcome_page(error=""):
+    return f"""<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8">{get_master_style()}</head>
+    <body style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div style="text-align:center; margin: 40px 0;">
+            <i class="fas fa-spider" style="font-size:80px; color:var(--accent); filter: drop-shadow(0 0 15px var(--accent));"></i>
+            <h1 style="margin:10px 0; font-size:30px;">{SITE_NAME}</h1>
         </div>
-    </body>
-    </html>
-    """
+        <div class="card" id="login-box" style="width:92%; max-width:400px;">
+            <h3 style="text-align:center; margin-top:0;">تسجيل الدخول</h3>
+            {f'<p style="color:#ff4757; text-align:center; font-size:14px; background:rgba(255,71,87,0.1); padding:10px; border-radius:15px;">{error}</p>' if error else ''}
+            <form action="/auth">
+                <input type="text" name="user" placeholder="اسم المستخدم" required>
+                <input type="password" name="pass" placeholder="كلمة المرور" required>
+                <button type="submit" class="btn-send">دخول الحساب</button>
+            </form>
+            <p style="text-align:center; margin-top:20px; font-size:14px;">ليس لديك حساب؟ <a href="javascript:toggleForm()" style="color:var(--accent); text-decoration:none;">سجل الآن</a></p>
+        </div>
+        <div class="card" id="reg-box" style="width:92%; max-width:400px; display:none;">
+            <h3 style="text-align:center; margin-top:0;">حساب جديد</h3>
+            <form action="/register">
+                <input type="text" name="nu" placeholder="اسم المستخدم" required>
+                <input type="password" name="np" placeholder="كلمة المرور" required>
+                <input type="tel" name="ph" placeholder="رقم الهاتف" required>
+                <button type="submit" class="btn-send">تأكيد التسجيل</button>
+            </form>
+            <p style="text-align:center; margin-top:20px; font-size:14px;">لديك حساب؟ <a href="javascript:toggleForm()" style="color:var(--accent); text-decoration:none;">سجل دخولك</a></p>
+        </div>
+        <script>function toggleForm(){{ const l=document.getElementById('login-box'), r=document.getElementById('reg-box'); l.style.display=l.style.display==='none'?'block':'none'; r.style.display=r.style.display==='none'?'block':'none'; }}</script>
+    </body></html>"""
 
 
 def get_orders_page(db, user):
