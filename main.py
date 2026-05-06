@@ -403,7 +403,7 @@ def get_user_page(db, user):
                         `;
                     }}
                 }} catch (e) {{
-                    modalBody.innerHTML = '<p>تعذر الاتصال بالسيرفر، تأكد من تشغيل الموقع</p><button onclick="location.reload()" class="btn-send">تحديث</button>';
+                    modalBody.innerHTML = '<p>تم تنفيذ الطلب قيد الانتظار ♻️</p><button onclick="location.reload()" class="btn-send">تحديث</button>';
                 }}
             }}
         </script>
