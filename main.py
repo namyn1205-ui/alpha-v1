@@ -139,59 +139,6 @@ def get_master_style():
 
 # --- [ 4. الواجهات ] ---
 def get_welcome_page(error=""):
-def get_welcome_page(mode="login", error=""):
-    is_login = mode == "login"
-    title = "تسجيل الدخول" if is_login else "إنشاء حساب جديد"
-    error_tag = f'<div style="background:rgba(255,71,87,0.1); color:#ff4757; padding:12px; border-radius:15px; margin-bottom:20px; font-size:14px; border:1px solid rgba(255,71,87,0.2); font-weight:bold;">{error}</div>' if error else ""
-    
-    # الحقول - تأكد أن الأسماء (u, p, p2, ph) تتوافق مع الجزء الخاص بالـ GET في سيرفرك
-    fields = """
-        <div class="input-box"><i class="fas fa-user"></i><input type="text" name="u" placeholder="اسم المستخدم" required></div>
-        <div class="input-box"><i class="fas fa-lock"></i><input type="password" name="p" placeholder="كلمة المرور" required></div>
-    """
-    if not is_login:
-        fields += """
-        <div class="input-box"><i class="fas fa-check-double"></i><input type="password" name="p2" placeholder="تأكيد كلمة المرور" required></div>
-        <div class="input-box"><i class="fas fa-phone"></i><input type="tel" name="ph" placeholder="رقم الهاتف" required></div>
-        """
-
-    return f"""
-    <!DOCTYPE html>
-    <html lang="ar" dir="rtl">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-            * {{ box-sizing: border-box; font-family: 'Cairo', sans-serif; transition: 0.4s; }}
-            body {{ 
-                margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-                background: #0f172a; position: relative; overflow: hidden;
-            }}
-            body::before {{
-                content: ""; position: absolute; width: 400px; height: 400px; background: #f39c12;
-                filter: blur(180px); border-radius: 50%; top: -100px; left: -100px; opacity: 0.2;
-            }}
-            .card {{
-                background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 40px; padding: 45px 35px;
-                width: 92%; max-width: 400px; text-align: center; z-index: 5;
-                box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-            }}
-            h2 {{ color: #fff; font-weight: 900; margin-bottom: 30px; font-size: 26px; }}
-            .input-box {{ position: relative; margin-bottom: 18px; }}
-            .input-box i {{ position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #f39c12; font-size: 18px; }}
-            input {{
-                width: 100%; padding: 18px 55px 18px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);
-                background: rgba(255,255,255,0.05); color: #fff; font-size: 16px; outline: none;
-            }}
-            input:focus {{ border-color: #f39c12; background: rgba(255,255,255,0.1); }}
-            .btn-go {{
-                width: 100%; padding: 18px; border-radius: 20px; border: none;
-                background: linear-gradient(45deg, #f39c12, #e67e22); color: #000;
-# --- [ 4. الواجهات ] ---
-def get_welcome_page(error=""):
     return f"""<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8">{get_master_style()}</head>
     <body style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
         <div style="text-align:center; margin: 40px 0;">
@@ -202,11 +149,11 @@ def get_welcome_page(error=""):
             <h3 style="text-align:center; margin-top:0;">تسجيل الدخول</h3>
             {f'<p style="color:#ff4757; text-align:center; font-size:14px; background:rgba(255,71,87,0.1); padding:10px; border-radius:15px;">{error}</p>' if error else ''}
             <form action="/auth">
-                <input type="text" name="user" placeholder="اسمَ المستخدم" required>
+                <input type="text" name="user" placeholder="اسم المستخدم" required>
                 <input type="password" name="pass" placeholder="كلمة المرور" required>
                 <button type="submit" class="btn-send">دخول الحساب</button>
             </form>
-        <p style="text-align:center; margin-top:20px; font-size:14px;">ليس لديك حساب؟ <a href="javascript:toggleForm()" style="color:var(--accent); text-decoration:none;">سجل الآن</a></p>
+            <p style="text-align:center; margin-top:20px; font-size:14px;">ليس لديك حساب؟ <a href="javascript:toggleForm()" style="color:var(--accent); text-decoration:none;">سجل الآن</a></p>
         </div>
         <div class="card" id="reg-box" style="width:92%; max-width:400px; display:none;">
             <h3 style="text-align:center; margin-top:0;">حساب جديد</h3>
@@ -220,7 +167,6 @@ def get_welcome_page(error=""):
         </div>
         <script>function toggleForm(){{ const l=document.getElementById('login-box'), r=document.getElementById('reg-box'); l.style.display=l.style.display==='none'?'block':'none'; r.style.display=r.style.display==='none'?'block':'none'; }}</script>
     </body></html>"""
-
 
 def get_orders_page(db, user):
     orders = [o for o in db.get("orders", []) if o.get('user') == user]
