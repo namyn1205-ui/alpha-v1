@@ -11,7 +11,7 @@ from http import cookies
 # --- [ 1. الإعدادات والبيانات الأساسية ] ---
 PORT = int(os.environ.get("PORT", 8080))
 DB_FILE = "spider_master_database.json"
-SITE_NAME = "SpiderSMM"
+SITE_NAME = "Spider Store Pro"
 TELEGRAM_USER = "iQSpider" 
 
 if os.path.exists(DB_FILE):
@@ -206,7 +206,7 @@ def get_welcome_page(error=""):
                 <input type="password" name="pass" placeholder="كلمة المرور" required>
                 <button type="submit" class="btn-send">دخول الحساب</button>
             </form>
-      <p style="text-align:center; margin-top:20px; font-size:14px;">ليس لديك حساب؟ <a href="javascript:toggleForm()" style="color:var(--accent); text-decoration:none;">سجل الآن</a></p>
+        <p style="text-align:center; margin-top:20px; font-size:14px;">ليس لديك حساب؟ <a href="javascript:toggleForm()" style="color:var(--accent); text-decoration:none;">سجل الآن</a></p>
         </div>
         <div class="card" id="reg-box" style="width:92%; max-width:400px; display:none;">
             <h3 style="text-align:center; margin-top:0;">حساب جديد</h3>
