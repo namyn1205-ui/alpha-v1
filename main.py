@@ -11,8 +11,8 @@ from http import cookies
 # --- [ 1. الإعدادات والبيانات الأساسية ] ---
 PORT = int(os.environ.get("PORT", 8080))
 DB_FILE = "spider_master_database.json"
-SITE_NAME = "Spider Store Pro"
-TELEGRAM_USER = "iQSpider" 
+SITE_NAME = "SpiderSMM"
+TELEGRAM_USER = "SmmSpider" 
 
 if os.path.exists(DB_FILE):
     os.remove(DB_FILE)
