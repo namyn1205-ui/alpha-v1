@@ -12,7 +12,7 @@ from http import cookies
 PORT = int(os.environ.get("PORT", 8080))
 DB_FILE = "spider_master_database.json"
 SITE_NAME = "SpiderSMM"
-TELEGRAM_USER = "SmmSpider" 
+TELEGRAM_USER = "iQSpider" 
 
 if os.path.exists(DB_FILE):
     os.remove(DB_FILE)
