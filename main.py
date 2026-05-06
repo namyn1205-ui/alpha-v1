@@ -202,7 +202,7 @@ def get_welcome_page(error=""):
             <h3 style="text-align:center; margin-top:0;">تسجيل الدخول</h3>
             {f'<p style="color:#ff4757; text-align:center; font-size:14px; background:rgba(255,71,87,0.1); padding:10px; border-radius:15px;">{error}</p>' if error else ''}
             <form action="/auth">
-                <input type="text" name="user" placeholder="اسم المستخدم" required>
+                <input type="text" name="user" placeholder="اسمَ المستخدم" required>
                 <input type="password" name="pass" placeholder="كلمة المرور" required>
                 <button type="submit" class="btn-send">دخول الحساب</button>
             </form>
