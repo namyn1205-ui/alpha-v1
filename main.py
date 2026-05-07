@@ -139,34 +139,127 @@ def get_master_style():
 
 # --- [ 4. الواجهات ] ---
 def get_welcome_page(error=""):
-    return f"""<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8">{get_master_style()}</head>
-    <body style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
-        <div style="text-align:center; margin: 40px 0;">
-            <i class="fas fa-spider" style="font-size:80px; color:var(--accent); filter: drop-shadow(0 0 15px var(--accent));"></i>
-            <h1 style="margin:10px 0; font-size:30px;">{SITE_NAME}</h1>
+    return f"""
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+            
+            * {{ box-sizing: border-box; font-family: 'Cairo', sans-serif; transition: 0.4s; }}
+            
+            body {{ 
+                margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+                background: #0f172a; position: relative; overflow: hidden;
+            }}
+
+            /* تأثيرات الخلفية المتحركة */
+            body::before, body::after {{
+                content: ""; position: absolute; width: 300px; height: 300px; border-radius: 50%;
+                filter: blur(100px); z-index: 0; opacity: 0.4;
+            }}
+            body::before {{ background: #f39c12; top: -50px; left: -50px; animation: move 10s infinite alternate; }}
+            body::after {{ background: #2c5364; bottom: -50px; right: -50px; animation: move 10s infinite alternate-reverse; }}
+            @keyframes move {{ from {{ transform: translate(0,0); }} to {{ transform: translate(50px, 50px); }} }}
+
+            .glass-card {{
+                background: rgba(255, 255, 255, 0.03);
+                backdrop-filter: blur(25px);
+                -webkit-backdrop-filter: blur(25px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 35px;
+                padding: 40px;
+                width: 90%;
+                max-width: 420px;
+                text-align: center;
+                z-index: 10;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            }}
+
+            .logo-area i {{
+                font-size: 60px; color: #f39c12;
+                filter: drop-shadow(0 0 15px rgba(243, 156, 18, 0.5));
+                margin-bottom: 15px;
+            }}
+
+            h2 {{ color: #fff; font-weight: 900; margin-bottom: 10px; }}
+            p.desc {{ color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 30px; }}
+
+            .input-group {{ position: relative; margin-bottom: 20px; text-align: right; }}
+            .input-group i {{ position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #f39c12; }}
+            
+            input {{
+                width: 100%; padding: 18px 50px 18px 20px; border-radius: 20px;
+                border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+                color: #fff; font-size: 16px; outline: none;
+            }}
+            input:focus {{ border-color: #f39c12; background: rgba(255,255,255,0.1); }}
+
+            .btn-action {{
+                width: 100%; padding: 18px; border-radius: 20px; border: none;
+                background: linear-gradient(45deg, #f39c12, #e67e22);
+                color: #000; font-weight: 900; font-size: 18px; cursor: pointer;
+                box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3);
+                margin-top: 10px;
+            }}
+            .btn-action:hover {{ transform: scale(1.03); }}
+
+            .toggle-link {{ color: rgba(255,255,255,0.5); margin-top: 25px; font-size: 14px; }}
+            .toggle-link span {{ color: #f39c12; cursor: pointer; font-weight: bold; text-decoration: underline; }}
+
+            .error-msg {{
+                background: rgba(255, 71, 87, 0.1); color: #ff4757; padding: 12px;
+                border-radius: 15px; border: 1px solid rgba(255, 71, 87, 0.2);
+                margin-bottom: 20px; font-size: 14px; font-weight: bold;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="glass-card">
+            <div class="logo-area"><i class="fas fa-spider"></i></div>
+            
+            <div id="login-section">
+                <h2>تسجيل الدخول</h2>
+                <p class="desc">أهلاً بك مجدداً في عالم الاحتراف</p>
+                {f'<div class="error-msg">{error}</div>' if error else ''}
+                <form action="/auth">
+                    <div class="input-group"><i class="fas fa-user"></i><input type="text" name="user" placeholder="اسم المستخدم" required></div>
+                    <div class="input-group"><i class="fas fa-lock"></i><input type="password" name="pass" placeholder="كلمة المرور" required></div>
+                    <button type="submit" class="btn-action">دخول الحساب</button>
+                </form>
+                <div class="toggle-link">ليس لديك حساب؟ <span onclick="showRegister()">إنشاء حساب جديد</span></div>
+            </div>
+
+            <div id="reg-section" style="display:none;">
+                <h2>حساب جديد</h2>
+                <p class="desc">انضم إلى النخبة واستمتع بخدماتنا</p>
+                <form action="/register">
+                    <div class="input-group"><i class="fas fa-user-plus"></i><input type="text" name="nu" placeholder="اختر اسم مستخدم" required></div>
+                    <div class="input-group"><i class="fas fa-key"></i><input type="password" name="np" placeholder="كلمة المرور" required></div>
+                    <div class="input-group"><i class="fas fa-phone"></i><input type="tel" name="ph" placeholder="رقم الهاتف" required></div>
+                    <button type="submit" class="btn-action">تأكيد التسجيل</button>
+                </form>
+                <div class="toggle-link">لديك حساب بالفعل؟ <span onclick="showLogin()">سجل دخولك</span></div>
+            </div>
         </div>
-        <div class="card" id="login-box" style="width:92%; max-width:400px;">
-            <h3 style="text-align:center; margin-top:0;">تسجيل الدخول</h3>
-            {f'<p style="color:#ff4757; text-align:center; font-size:14px; background:rgba(255,71,87,0.1); padding:10px; border-radius:15px;">{error}</p>' if error else ''}
-            <form action="/auth">
-                <input type="text" name="user" placeholder="اسم المستخدم" required>
-                <input type="password" name="pass" placeholder="كلمة المرور" required>
-                <button type="submit" class="btn-send">دخول الحساب</button>
-            </form>
-            <p style="text-align:center; margin-top:20px; font-size:14px;">ليس لديك حساب؟ <a href="javascript:toggleForm()" style="color:var(--accent); text-decoration:none;">سجل الآن</a></p>
-        </div>
-        <div class="card" id="reg-box" style="width:92%; max-width:400px; display:none;">
-            <h3 style="text-align:center; margin-top:0;">حساب جديد</h3>
-            <form action="/register">
-                <input type="text" name="nu" placeholder="اسم المستخدم" required>
-                <input type="password" name="np" placeholder="كلمة المرور" required>
-                <input type="tel" name="ph" placeholder="رقم الهاتف" required>
-                <button type="submit" class="btn-send">تأكيد التسجيل</button>
-            </form>
-            <p style="text-align:center; margin-top:20px; font-size:14px;">لديك حساب؟ <a href="javascript:toggleForm()" style="color:var(--accent); text-decoration:none;">سجل دخولك</a></p>
-        </div>
-        <script>function toggleForm(){{ const l=document.getElementById('login-box'), r=document.getElementById('reg-box'); l.style.display=l.style.display==='none'?'block':'none'; r.style.display=r.style.display==='none'?'block':'none'; }}</script>
-    </body></html>"""
+
+        <script>
+            function showRegister() {{
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('reg-section').style.display = 'block';
+            }}
+            function showLogin() {{
+                document.getElementById('reg-section').style.display = 'none';
+                document.getElementById('login-section').style.display = 'block';
+            }}
+        </script>
+    </body>
+    </html>
+    """
+
 
 def get_orders_page(db, user):
     orders = [o for o in db.get("orders", []) if o.get('user') == user]
