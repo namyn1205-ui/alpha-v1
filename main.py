@@ -236,29 +236,165 @@ def get_welcome_page(error=""):
             <div id="reg-section" style="display:none;">
                 <h2>حساب جديد</h2>
                 <p class="desc">انضم إلى النخبة واستمتع بخدماتنا</p>
-                <form action="/register">
-                    <div class="input-group"><i class="fas fa-user-plus"></i><input type="text" name="nu" placeholder="اختر اسم مستخدم" required></div>
-                    <div class="input-group"><i class="fas fa-key"></i><input type="password" name="np" placeholder="كلمة المرور" required></div>
-                    <div class="input-group"><i class="fas fa-phone"></i><input type="tel" name="ph" placeholder="رقم الهاتف" required></div>
-                    <button type="submit" class="btn-action">تأكيد التسجيل</button>
-                </form>
-                <div class="toggle-link">لديك حساب بالفعل؟ <span onclick="showLogin()">سجل دخولك</span></div>
+def get_welcome_page(error=""):
+    return f"""
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;900&display=swap');
+            
+            :root {{ --gold: #f39c12; --dark-bg: #050a14; --card-bg: rgba(255, 255, 255, 0.03); }}
+
+            * {{ box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }}
+            
+            html, body {{ 
+                margin: 0; padding: 0; width: 100%; overflow-x: hidden; /* منع الحركة الجانبية */
+                background: var(--dark-bg); color: #fff;
+            }}
+
+            /* خلفية Aurora ثابتة */
+            .aurora-bg {{
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: radial-gradient(circle at 20% 30%, rgba(243, 156, 18, 0.15) 0%, transparent 40%),
+                            radial-gradient(circle at 80% 70%, rgba(44, 83, 100, 0.2) 0%, transparent 40%);
+                z-index: -1;
+            }}
+
+            .wrapper {{ 
+                display: flex; flex-direction: column; align-items: center; 
+                padding: 40px 20px; width: 100%; max-width: 100vw;
+            }}
+
+            /* شعار السبايدر المطور */
+            .logo-wrap {{ position: relative; margin-bottom: 30px; }}
+            .logo-wrap i {{ 
+                font-size: 80px; color: var(--gold); 
+                filter: drop-shadow(0 0 20px rgba(243, 156, 18, 0.6));
+                animation: spiderFloat 4s infinite ease-in-out;
+            }}
+            @keyframes spiderFloat {{ 0%, 100% {{ transform: translateY(0); }} 50% {{ transform: translateY(-10px); }} }}
+
+            .glass-card {{
+                background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 35px;
+                padding: 40px 30px; width: 100%; max-width: 400px;
+                box-shadow: 0 40px 80px rgba(0,0,0,0.6); z-index: 10;
+            }}
+
+            h1 {{ font-size: 28px; font-weight: 900; margin: 0 0 10px; text-align: center; }}
+            .sub-txt {{ color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 30px; font-size: 14px; }}
+
+            /* نظام المدخلات */
+            .input-box {{ position: relative; margin-bottom: 20px; }}
+            .input-box i {{ position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--gold); }}
+            input {{
+                width: 100%; padding: 18px 55px 18px 20px; border-radius: 20px;
+                border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);
+                color: #fff; font-size: 16px; outline: none; transition: 0.3s;
+            }}
+            input:focus {{ border-color: var(--gold); background: rgba(243, 156, 18, 0.05); }}
+
+            .btn-main {{
+                width: 100%; padding: 18px; border-radius: 20px; border: none;
+                background: linear-gradient(135deg, #f39c12, #e67e22);
+                color: #000; font-weight: 900; font-size: 18px; cursor: pointer;
+                box-shadow: 0 15px 30px rgba(243, 156, 18, 0.3); margin-top: 10px;
+            }}
+
+            /* قسم لماذا تختارنا */
+            .features-section {{ width: 100%; max-width: 500px; margin-top: 60px; }}
+            .section-title {{ text-align: center; font-weight: 900; font-size: 22px; margin-bottom: 30px; color: var(--gold); }}
+            
+            .feature-grid {{ display: grid; grid-template-columns: 1fr; gap: 15px; }}
+            .f-card {{
+                background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+                padding: 20px; border-radius: 25px; display: flex; align-items: center; gap: 15px;
+            }}
+            .f-card i {{ font-size: 25px; color: var(--gold); background: rgba(243,156,18,0.1); padding: 15px; border-radius: 18px; }}
+            .f-info h4 {{ margin: 0; font-size: 16px; color: #fff; }}
+            .f-info p {{ margin: 5px 0 0; font-size: 13px; color: rgba(255,255,255,0.5); }}
+
+            .toggle-btn {{ text-align: center; margin-top: 25px; color: rgba(255,255,255,0.4); font-size: 14px; cursor: pointer; }}
+            .toggle-btn b {{ color: var(--gold); text-decoration: underline; }}
+        </style>
+    </head>
+    <body>
+        <div class="aurora-bg"></div>
+        <div class="wrapper">
+            
+            <div class="logo-wrap"><i class="fas fa-spider"></i></div>
+            
+            <div class="glass-card" id="auth-box">
+                <div id="login-form">
+                    <h1>تسجيل الدخول</h1>
+                    <p class="sub-txt">أهلاً بك في مجمع {SITE_NAME} الرقمي</p>
+                    {f'<div style="color:#ff4757; text-align:center; font-size:14px; margin-bottom:15px; font-weight:bold;">{error}</div>' if error else ''}
+                    <form action="/auth">
+                        <div class="input-box"><i class="fas fa-user"></i><input type="text" name="user" placeholder="اسم المستخدم" required></div>
+                        <div class="input-box"><i class="fas fa-lock"></i><input type="password" name="pass" placeholder="كلمة المرور" required></div>
+                        <button type="submit" class="btn-main">دخول آمن</button>
+                    </form>
+                    <div class="toggle-btn" onclick="toggleAuth()">ليس لديك عضوية؟ <b>إنشاء حساب</b></div>
+                </div>
+
+                <div id="reg-form" style="display:none;">
+                    <h1>عضوية جديدة</h1>
+                    <p class="sub-txt">ابدأ رحلتك معنا واحصل على أفضل الخدمات</p>
+                    <form action="/register">
+                        <div class="input-box"><i class="fas fa-user-plus"></i><input type="text" name="nu" placeholder="يوزر الحساب" required></div>
+                        <div class="input-box"><i class="fas fa-key"></i><input type="password" name="np" placeholder="كلمة المرور" required></div>
+                        <div class="input-box"><i class="fas fa-phone"></i><input type="tel" name="ph" placeholder="رقم الهاتف" required></div>
+                        <button type="submit" class="btn-main">تفعيل الحساب</button>
+                    </form>
+                    <div class="toggle-btn" onclick="toggleAuth()">لديك حساب؟ <b>تسجيل دخول</b></div>
+                </div>
             </div>
+
+            <div class="features-section">
+                <div class="section-title">لماذا {SITE_NAME}؟</div>
+                <div class="feature-grid">
+                    <div class="f-card">
+                        <i class="fas fa-bolt"></i>
+                        <div class="f-info">
+                            <h4>تنفيذ لحظي</h4>
+                            <p>يتم إرسال طلبك للمزود فوراً بفضل نظام الـ API المتقدم.</p>
+                        </div>
+                    </div>
+                    <div class="f-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <div class="f-info">
+                            <h4>أمان وحماية</h4>
+                            <p>بياناتك وحساباتك في أمان تام مع تشفير نظامنا الخاص.</p>
+                        </div>
+                    </div>
+                    <div class="f-card">
+                        <i class="fas fa-headset"></i>
+                        <div class="f-info">
+                            <h4>دعم فني 24/7</h4>
+                            <p>فريقنا متواجد دائماً عبر التليجرام لحل أي مشكلة تواجهك.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p style="margin-top:50px; color:rgba(255,255,255,0.2); font-size:12px;">Spider Store Pro © 2026 - جميع الحقوق محفوظة</p>
         </div>
 
         <script>
-            function showRegister() {{
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('reg-section').style.display = 'block';
-            }}
-            function showLogin() {{
-                document.getElementById('reg-section').style.display = 'none';
-                document.getElementById('login-section').style.display = 'block';
+            function toggleAuth() {{
+                const l = document.getElementById('login-form'), r = document.getElementById('reg-form');
+                if(l.style.display === 'none') {{ l.style.display = 'block'; r.style.display = 'none'; }}
+                else {{ l.style.display = 'none'; r.style.display = 'block'; }}
             }}
         </script>
     </body>
     </html>
     """
+
 
 
 def get_orders_page(db, user):
