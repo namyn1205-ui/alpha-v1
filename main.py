@@ -166,22 +166,35 @@ def get_welcome_page(error=""):
 
             html, body {{
                 width: 100%;
+                height: 100%;
                 overflow-x: hidden; /* يمنع الحركة الجانبية تماماً */
                 background: var(--dark-bg);
                 color: #fff;
                 line-height: 1.6;
             }}
 
-            /* خلفية أورورا ناعمة مريحة للعين */
-            body::before {{
-                content: "";
+            /* --- [ الخلفية المتحركة المتقدمة ] --- */
+            .video-background {{
+                position: fixed;
+                right: 0;
+                bottom: 0;
+                min-width: 100%;
+                min-height: 100%;
+                width: auto;
+                height: auto;
+                z-index: -2; /* خلف كل شيء */
+                object-fit: cover; /* لضمان تغطية الشاشة بالكامل */
+                opacity: 0.4; /* لتقليل السطوع وجعلها خلفية هادئة */
+            }}
+
+            /* طبقة تظليل فوق الفيديو لتحسين وضوح النص */
+            .overlay {{
                 position: fixed;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: radial-gradient(circle at 10% 20%, rgba(243, 156, 18, 0.12) 0%, transparent 40%),
-                            radial-gradient(circle at 90% 80%, rgba(44, 83, 100, 0.18) 0%, transparent 40%);
+                background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 100%);
                 z-index: -1;
             }}
 
@@ -191,19 +204,23 @@ def get_welcome_page(error=""):
                 align-items: center;
                 padding: 40px 15px;
                 width: 100%;
+                min-height: 100%; /* لضمان التمركز العمودي */
+                position: relative;
+                z-index: 1; /* فوق الخلفية */
             }}
 
-            /* شعار السبايدر المتوهج والمتحرك */
+            /* --- [ شعار السبايدر الحقيقي ] --- */
             .logo-section {{
                 margin-bottom: 30px;
                 text-align: center;
             }}
 
-            .logo-section i {{
-                font-size: 85px;
-                color: var(--gold);
-                filter: drop-shadow(0 0 25px rgba(243, 156, 18, 0.6));
-                animation: floatAnim 4s infinite ease-in-out;
+            /* تنسيق صورة الشعار الحقيقي */
+            .logo-section .real-spider-logo {{
+                width: 120px; /* حجم مناسب */
+                height: auto;
+                filter: drop-shadow(0 0 25px rgba(243, 156, 18, 0.8)); /* توهج ذهبي */
+                animation: floatAnim 4s infinite ease-in-out; /* حركة عائمة */
             }}
 
             @keyframes floatAnim {{
@@ -211,7 +228,7 @@ def get_welcome_page(error=""):
                 50% {{ transform: translateY(-15px); }}
             }}
 
-            /* الكرت الزجاجي الاحترافي */
+            /* الكرت الزجاجي (كما هو) */
             .auth-card {{
                 background: var(--glass-bg);
                 backdrop-filter: blur(25px);
@@ -222,13 +239,12 @@ def get_welcome_page(error=""):
                 width: 100%;
                 max-width: 420px;
                 box-shadow: 0 50px 100px rgba(0,0,0,0.8);
-                z-index: 5;
             }}
 
             h1 {{ font-size: 26px; font-weight: 900; text-align: center; margin-bottom: 5px; }}
             .sub-title {{ color: rgba(255,255,255,0.4); text-align: center; margin-bottom: 35px; font-size: 13px; }}
 
-            /* حقول الإدخال */
+            /* المدخلات (كما هي) */
             .field-box {{ position: relative; margin-bottom: 18px; }}
             .field-box i {{ position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 18px; }}
             
@@ -273,7 +289,7 @@ def get_welcome_page(error=""):
 
             .switch-btn b {{ color: var(--gold); text-decoration: underline; padding-right: 5px; }}
 
-            /* قسم مميزات المتجر */
+            /* قسم لماذا تختارنا (كما هو) */
             .why-us {{ width: 100%; max-width: 450px; margin-top: 50px; }}
             .why-title {{ text-align: center; font-weight: 900; color: var(--gold); margin-bottom: 25px; font-size: 20px; }}
             
@@ -306,10 +322,18 @@ def get_welcome_page(error=""):
         </style>
     </head>
     <body>
+        
+        <video autoplay loop muted playsinline class="video-background">
+            <source src="https://cdn.pixabay.com/video/2021/04/23/71900-541539243_tiny.mp4" type="video/mp4">
+            متصفحك لا يدعم تشغيل الفيديو.
+        </video>
+        
+        <div class="overlay"></div>
+
         <div class="main-wrapper">
             
             <div class="logo-section">
-                <i class="fas fa-spider"></i>
+                <img src="https://i.ibb.co/L5QzXFz/spider-logo-real.png" alt="Spider Logo" class="real-spider-logo">
             </div>
 
             <div class="auth-card">
@@ -401,7 +425,7 @@ def get_welcome_page(error=""):
     </body>
     </html>
     """
-
+    
 
 
 def get_orders_page(db, user):
