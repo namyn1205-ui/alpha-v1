@@ -147,13 +147,14 @@ def get_welcome_page(error=""):
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;900&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
             
             :root {{
                 --gold: #f39c12;
-                --dark-bg: #050a14;
-                --glass-bg: rgba(255, 255, 255, 0.03);
-                --border: rgba(255, 255, 255, 0.08);
+                --dark-bg: #030712;
+                --glass-bg: rgba(255, 255, 255, 0.02);
+                --border: rgba(255, 255, 255, 0.06);
+                --glow: rgba(243, 156, 18, 0.4);
             }}
 
             * {{
@@ -165,119 +166,137 @@ def get_welcome_page(error=""):
             }}
 
             html, body {{
-                width: 100%;
-                height: 100%;
-                overflow-x: hidden; /* يمنع الحركة الجانبية تماماً */
+                width: 100vw;
+                min-height: 100vh;
+                overflow-x: hidden; /* منع الحركة الجانبية تماماً */
                 background: var(--dark-bg);
                 color: #fff;
                 line-height: 1.6;
+                position: relative;
             }}
 
-            /* --- [ الخلفية المتحركة المتقدمة ] --- */
-            .video-background {{
+            /* --- تأثير الخلفية الديناميكية المتحركة --- */
+            #canvas-particles {{
                 position: fixed;
-                right: 0;
-                bottom: 0;
-                min-width: 100%;
-                min-height: 100%;
-                width: auto;
-                height: auto;
-                z-index: -2; /* خلف كل شيء */
-                object-fit: cover; /* لضمان تغطية الشاشة بالكامل */
-                opacity: 0.4; /* لتقليل السطوع وجعلها خلفية هادئة */
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+                pointer-events: none;
             }}
 
-            /* طبقة تظليل فوق الفيديو لتحسين وضوح النص */
             .overlay {{
                 position: fixed;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 100%);
-                z-index: -1;
+                background: radial-gradient(circle at center, transparent 20%, var(--dark-bg) 95%);
+                z-index: 0;
+                pointer-events: none;
             }}
 
             .main-wrapper {{
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                padding: 40px 15px;
+                padding: 50px 20px;
                 width: 100%;
-                min-height: 100%; /* لضمان التمركز العمودي */
+                max-width: 100%;
                 position: relative;
-                z-index: 1; /* فوق الخلفية */
+                z-index: 10;
             }}
 
-            /* --- [ شعار السبايدر الحقيقي ] --- */
-            .logo-section {{
-                margin-bottom: 30px;
-                text-align: center;
+            /* --- شعار العنكبوت الواقعي والمجسم --- */
+            .logo-container {{
+                margin-bottom: 25px;
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
             }}
 
-            /* تنسيق صورة الشعار الحقيقي */
-            .logo-section .real-spider-logo {{
-                width: 120px; /* حجم مناسب */
-                height: auto;
-                filter: drop-shadow(0 0 25px rgba(243, 156, 18, 0.8)); /* توهج ذهبي */
-                animation: floatAnim 4s infinite ease-in-out; /* حركة عائمة */
+            .logo-container img {{
+                width: 130px;
+                height: 130px;
+                object-fit: contain;
+                filter: drop-shadow(0 0 30px var(--gold));
+                animation: floatSpider 4s infinite ease-in-out;
             }}
 
-            @keyframes floatAnim {{
-                0%, 100% {{ transform: translateY(0); }}
-                50% {{ transform: translateY(-15px); }}
+            @keyframes floatSpider {{
+                0%, 100% {{ transform: translateY(0) rotate(0deg); }}
+                50% {{ transform: translateY(-12px) rotate(2deg); }}
             }}
 
-            /* الكرت الزجاجي (كما هو) */
+            /* --- الكرت الزجاجي الأنيق --- */
             .auth-card {{
                 background: var(--glass-bg);
-                backdrop-filter: blur(25px);
-                -webkit-backdrop-filter: blur(25px);
+                backdrop-filter: blur(30px);
+                -webkit-backdrop-filter: blur(30px);
                 border: 1px solid var(--border);
                 border-radius: 40px;
-                padding: 40px 25px;
+                padding: 45px 30px;
                 width: 100%;
-                max-width: 420px;
-                box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+                max-width: 410px;
+                box-shadow: 0 40px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+                position: relative;
             }}
 
-            h1 {{ font-size: 26px; font-weight: 900; text-align: center; margin-bottom: 5px; }}
+            .auth-card::after {{
+                content: '';
+                position: absolute;
+                top: 0; left: 10%; right: 10%; height: 2px;
+                background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            }}
+
+            h1 {{ font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 5px; letter-spacing: -0.5px; }}
             .sub-title {{ color: rgba(255,255,255,0.4); text-align: center; margin-bottom: 35px; font-size: 13px; }}
 
-            /* المدخلات (كما هي) */
-            .field-box {{ position: relative; margin-bottom: 18px; }}
+            /* حقول الإدخال */
+            .field-box {{ position: relative; margin-bottom: 20px; }}
             .field-box i {{ position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 18px; }}
             
             input {{
                 width: 100%;
                 padding: 18px 55px 18px 20px;
-                border-radius: 22px;
-                border: 1px solid rgba(255,255,255,0.1);
-                background: rgba(0,0,0,0.3);
+                border-radius: 24px;
+                border: 1px solid rgba(255,255,255,0.08);
+                background: rgba(0,0,0,0.4);
                 color: #fff;
                 font-size: 16px;
                 outline: none;
-                transition: all 0.3s ease;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }}
 
-            input:focus {{ border-color: var(--gold); background: rgba(243, 156, 18, 0.05); }}
+            input:focus {{ 
+                border-color: var(--gold); 
+                background: rgba(243, 156, 18, 0.04);
+                box-shadow: 0 0 20px rgba(243, 156, 18, 0.15);
+            }}
 
+            /* الأزرار التفاعلية */
             .action-btn {{
                 width: 100%;
                 padding: 18px;
-                border-radius: 22px;
+                border-radius: 24px;
                 border: none;
                 background: linear-gradient(135deg, #f39c12, #e67e22);
                 color: #000;
                 font-weight: 900;
                 font-size: 18px;
                 cursor: pointer;
-                box-shadow: 0 15px 35px rgba(243, 156, 18, 0.4);
+                box-shadow: 0 15px 35px rgba(243, 156, 18, 0.35);
                 margin-top: 10px;
-                transition: 0.3s;
+                transition: transform 0.2s, box-shadow 0.2s;
             }}
 
-            .action-btn:active {{ transform: scale(0.98); }}
+            .action-btn:hover {{
+                box-shadow: 0 15px 40px rgba(243, 156, 18, 0.5);
+            }}
+
+            .action-btn:active {{ transform: scale(0.97); }}
 
             .switch-btn {{
                 text-align: center;
@@ -287,53 +306,57 @@ def get_welcome_page(error=""):
                 cursor: pointer;
             }}
 
-            .switch-btn b {{ color: var(--gold); text-decoration: underline; padding-right: 5px; }}
+            .switch-btn b {{ color: var(--gold); text-decoration: none; border-bottom: 1px dashed var(--gold); padding-right: 5px; }}
 
-            /* قسم لماذا تختارنا (كما هو) */
-            .why-us {{ width: 100%; max-width: 450px; margin-top: 50px; }}
-            .why-title {{ text-align: center; font-weight: 900; color: var(--gold); margin-bottom: 25px; font-size: 20px; }}
+            /* --- قسم لماذا تختارنا (تصميم جذاب وممتع) --- */
+            .why-us-section {{ width: 100%; max-width: 440px; margin-top: 60px; }}
+            .why-title {{ text-align: center; font-weight: 900; color: var(--gold); margin-bottom: 30px; font-size: 22px; position: relative; }}
             
             .info-card {{
-                background: rgba(255,255,255,0.02);
-                border: 1px solid rgba(255,255,255,0.05);
-                padding: 22px;
-                border-radius: 28px;
+                background: rgba(255, 255, 255, 0.01);
+                border: 1px solid rgba(255, 255, 255, 0.03);
+                padding: 24px;
+                border-radius: 30px;
                 display: flex;
                 align-items: center;
-                gap: 18px;
-                margin-bottom: 15px;
+                gap: 20px;
+                margin-bottom: 18px;
+                transition: transform 0.3s, background 0.3s;
             }}
 
-            .info-card i {{
+            .info-card:hover {{
+                transform: translateY(-5px);
+                background: rgba(255, 255, 255, 0.03);
+                border-color: rgba(243, 156, 18, 0.2);
+            }}
+
+            .info-card .icon-wrap {{
                 font-size: 24px;
                 color: #000;
-                background: var(--gold);
-                width: 55px;
-                height: 55px;
+                background: linear-gradient(135deg, #f39c12, #e67e22);
+                width: 60px;
+                height: 60px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                border-radius: 18px;
+                border-radius: 20px;
                 flex-shrink: 0;
+                box-shadow: 0 8px 20px rgba(243, 156, 18, 0.25);
             }}
 
-            .info-text h4 {{ font-size: 16px; margin-bottom: 3px; }}
-            .info-text p {{ font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.4; }}
+            .info-text h4 {{ font-size: 17px; margin-bottom: 5px; font-weight: 700; }}
+            .info-text p {{ font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.5; }}
         </style>
     </head>
     <body>
         
-        <video autoplay loop muted playsinline class="video-background">
-            <source src="https://cdn.pixabay.com/video/2021/04/23/71900-541539243_tiny.mp4" type="video/mp4">
-            متصفحك لا يدعم تشغيل الفيديو.
-        </video>
-        
+        <canvas id="canvas-particles"></canvas>
         <div class="overlay"></div>
 
         <div class="main-wrapper">
             
-            <div class="logo-section">
-                <img src="https://i.ibb.co/L5QzXFz/spider-logo-real.png" alt="Spider Logo" class="real-spider-logo">
+            <div class="logo-container">
+                <img src="https://i.ibb.co/VMy4v27/spyder-3d.png" alt="Spider Logo">
             </div>
 
             <div class="auth-card">
@@ -379,30 +402,30 @@ def get_welcome_page(error=""):
 
             </div>
 
-            <div class="why-us">
+            <div class="why-us-section">
                 <h3 class="why-title">لماذا تختار متجرنا؟</h3>
                 
                 <div class="info-card">
-                    <i class="fas fa-bolt"></i>
+                    <div class="icon-wrap"><i class="fas fa-bolt"></i></div>
                     <div class="info-text">
                         <h4>سرعة خرافية</h4>
-                        <p>نظامنا مرتبط بـ API عالمي يضمن تنفيذ طلبك خلال ثوانٍ من الدفع.</p>
+                        <p>نظامنا مرتبط بـ API عالمي فائق التطور لضمان معالجة طلبك خلال ثوانٍ معدودة وبشكل تلقائي.</p>
                     </div>
                 </div>
 
                 <div class="info-card">
-                    <i class="fas fa-gem"></i>
+                    <div class="icon-wrap"><i class="fas fa-gem"></i></div>
                     <div class="info-text">
-                        <h4>جودة VIP</h4>
-                        <p>نوفر لك اشتراكات أصلية ومضمونة لجميع التطبيقات والبرامج بأسعار تنافسية.</p>
+                        <h4>جودة واشتراكات مضمونة</h4>
+                        <p>نوفر لك أفضل جودة اشتراكات وحسابات VIP من مصادر رسمية مع ضمان كامل للمدة.</p>
                     </div>
                 </div>
 
                 <div class="info-card">
-                    <i class="fas fa-user-shield"></i>
+                    <div class="icon-wrap"><i class="fas fa-fingerprint"></i></div>
                     <div class="info-text">
-                        <h4>حماية خصوصيتك</h4>
-                        <p>لا نحتاج لمعلومات سرية، فقط الرابط ونحن نتكفل بالباقي بأمان تام.</p>
+                        <h4>خصوصية وتشفير كامل</h4>
+                        <p>تتم معالجة جميع حساباتك وسجلات عملياتك ضمن سيرفرات آمنة ومشفرة تماماً.</p>
                     </div>
                 </div>
             </div>
@@ -411,6 +434,7 @@ def get_welcome_page(error=""):
         </div>
 
         <script>
+            // كود الجافا سكريبت الخاص بالتبديل بين التسجيل والدخول
             function toggleAuth() {{
                 const l = document.getElementById('login-form'), r = document.getElementById('reg-form');
                 if(l.style.display === 'none') {{
@@ -421,12 +445,66 @@ def get_welcome_page(error=""):
                     r.style.display = 'block';
                 }}
             }}
+
+            // كود محاكي الجزيئات الديناميكية للخلفية بدون التسبب ببطء للمتصفح
+            const canvas = document.getElementById('canvas-particles');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+
+            function resizeCanvas() {{
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }}
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            class Particle {{
+                constructor() {{
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.speedX = Math.random() * 0.4 - 0.2;
+                    this.speedY = Math.random() * 0.4 - 0.2;
+                }}
+                update() {{
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x > canvas.width) this.x = 0;
+                    if (this.x < 0) this.x = canvas.width;
+                    if (this.y > canvas.height) this.y = 0;
+                    if (this.y < 0) this.y = canvas.height;
+                }}
+                draw() {{
+                    ctx.fillStyle = 'rgba(243, 156, 18, ' + (Math.random() * 0.3 + 0.2) + ')';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }}
+            }}
+
+            function init() {{
+                particles = [];
+                const particleCount = Math.min(60, Math.floor(window.innerWidth / 15));
+                for (let i = 0; i < particleCount; i++) {{
+                    particles.push(new Particle());
+                }}
+            }}
+
+            function animate() {{
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {{
+                    particles[i].update();
+                    particles[i].draw();
+                }}
+                requestAnimationFrame(animate);
+            }}
+
+            init();
+            animate();
         </script>
     </body>
     </html>
     """
-    
-
 
 def get_orders_page(db, user):
     orders = [o for o in db.get("orders", []) if o.get('user') == user]
