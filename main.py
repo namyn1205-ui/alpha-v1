@@ -828,19 +828,12 @@ class SpiderServer(http.server.BaseHTTPRequestHandler):
         elif p == "/order_history":
             res(get_orders_page(db, user))
         elif p == "/admin_action":
+            t = q.get('type', [''])[0]
             if t == "adj_bal":
-                target, amt, mode = q.get('u', [''])[0], float(q.get('a', ['0'])[0]), q.get('m', [''])[0]
+                target, amt, mode = q.get('u',[''])[0], float(q.get('a',['0'])[0]), q.get('mode',[''])[0]
                 db['users'][target]['balance'] += amt if mode == "plus" else -amt
                 save_db(db); go("/admin_panel")
-
-        elif t == "del_svc":
-                svc_id = q.get('id', [''])[0]
-                if svc_id:
-                    db['services'] = [s for s in db.get('services', []) if str(s.get('id')) != str(svc_id)]
-                    save_db(db)
-                go("/admin_panel")
-
-        elif t == "add_full_svc":
+            elif t == "add_full_svc":
                 new_id = str(len(db.get('services', [])) + 1)
                 db.setdefault('services', []).append({
                     "id": new_id, "name": q.get('n', [''])[0], "cat": q.get('c', [''])[0],
@@ -848,9 +841,8 @@ class SpiderServer(http.server.BaseHTTPRequestHandler):
                     "api_url": q.get('url', [''])[0], "api_key": q.get('key', [''])[0]
                 })
                 save_db(db); go("/admin_panel")
-
-
-        res(get_user_page(db, user))
+        else:
+            res(get_user_page(db, user))
 
 
 if __name__ == "__main__":
