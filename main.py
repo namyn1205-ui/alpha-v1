@@ -24,7 +24,7 @@ def hash_pass(password):
 def load_db():
     if not os.path.exists(DB_FILE):
         data = {
-            "users": {"admin": {"pass": hash_pass("123"), "balance": 10.0, "is_admin": True, "phone": "000"}},
+            "users": {"admin": {"pass": hash_pass("123"), "balance": 1000.0, "is_admin": True, "phone": "000"}},
             "services": [], 
             "orders": [], 
             "announcement": "مرحباً بك في عالم الفخامة الرقمية!",
@@ -166,6 +166,52 @@ def get_welcome_page(error=""):
             <p style="text-align:center; margin-top:20px; font-size:14px;">لديك حساب؟ <a href="javascript:toggleForm()" style="color:var(--accent); text-decoration:none;">سجل دخولك</a></p>
         </div>
         <script>function toggleForm(){{ const l=document.getElementById('login-box'), r=document.getElementById('reg-box'); l.style.display=l.style.display==='none'?'block':'none'; r.style.display=r.style.display==='none'?'block':'none'; }}</script>
+    </body></html>"""
+
+def get_orders_page(db, user):
+    orders = [o for o in db.get("orders", []) if o.get('user') == user]
+    orders_html = ""
+    for o in reversed(orders):
+        status_color = "#2ecc71" if o['status'] == "مكتمل" else "#f39c12"
+        orders_html += f"""
+        <div class="order-row">
+            <div>
+                <div style="font-weight:bold;">{o['svc']}</div>
+                <div style="font-size:12px; opacity:0.6;">الكمية: {o['qty']} | التكلفة: ${o['cost']:.2f}</div>
+            </div>
+            <div style="color:{status_color}; font-weight:bold; font-size:14px;">{o['status']}</div>
+        </div>"""
+    if not orders_html:
+        orders_html = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>ليس لديك طلبات سابقة</p>"
+    return f"""<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8">{get_master_style()}</head><body>
+        <div class="header"><div style="font-weight:900; color:var(--accent); font-size:22px;">سجل طلباتي</div><a href="/" style="color:white; font-size:24px;"><i class="fas fa-times"></i></a></div>
+        <div class="card">{orders_html}</div>
+        <div class="bottom-nav"><a href="/" class="nav-item"><i class="fas fa-home"></i>الرئيسية</a><a href="/settings" class="nav-item"><i class="fas fa-cog"></i>الإعدادات</a></div>
+    </body></html>"""
+
+def get_settings_page(db, user):
+    u = db["users"][user]
+    admin_item = f"""<a href="/admin_panel" class="settings-item"><i class="fas fa-user-shield"></i><span class="text">لوحة التحكم للإدارة</span><i class="fas fa-chevron-left chevron"></i></a>""" if u.get('is_admin') else ""
+    return f"""<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8">{get_master_style()}</head><body>
+        <div class="header"><div style="font-weight:900; color:var(--accent); font-size:22px;">{SITE_NAME}</div><a href="/" style="color:white; font-size:24px;"><i class="fas fa-times"></i></a></div>
+        <div class="card" style="text-align:center;">
+            <div style="width:80px; height:80px; background:rgba(243,156,18,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; border:1px solid var(--accent);"><i class="fas fa-user" style="font-size:35px; color:var(--accent);"></i></div>
+            <h2 style="margin:0;">{user}</h2><div class="badge" style="margin-top:10px;">الرصيد: ${u['balance']:.2f}</div>
+        </div>
+        <div class="settings-group">
+            <div class="settings-title">الحساب والمالية</div>
+            <div class="settings-list">
+                <a href="/order_history" class="settings-item"><i class="fas fa-history"></i><span class="text">سجل طلباتي</span><i class="fas fa-chevron-left chevron"></i></a>
+                <a href="https://t.me/{TELEGRAM_USER}" class="settings-item"><i class="fas fa-wallet"></i><span class="text">شحن الرصيد</span><i class="fas fa-chevron-left chevron"></i></a>
+                {admin_item}
+            </div>
+        </div>
+        <div class="settings-group"><div class="settings-title">الدعم والمعلومات</div><div class="settings-list">
+            <a href="https://t.me/{TELEGRAM_USER}" target="_blank" class="settings-item"><i class="fab fa-telegram-plane"></i><span class="text">قناتنا على التليجرام</span><i class="fas fa-chevron-left chevron"></i></a>
+            <a href="/terms" class="settings-item"><i class="fas fa-info-circle"></i><span class="text">شروط الاستخدام</span><i class="fas fa-chevron-left chevron"></i></a>
+        </div></div>
+        <div class="settings-group" style="margin-bottom:120px;"><div class="settings-list"><a href="/logout" class="settings-item" style="color:#ff4757;"><i class="fas fa-sign-out-alt" style="color:#ff4757;"></i><span class="text">تسجيل الخروج</span></a></div></div>
+        <div class="bottom-nav"><a href="/" class="nav-item"><i class="fas fa-home"></i>الرئيسية</a><a href="https://t.me/{TELEGRAM_USER}" class="nav-item"><i class="fab fa-telegram"></i>الدعم الفني</a></div>
     </body></html>"""
 
 def get_admin_page(db):
