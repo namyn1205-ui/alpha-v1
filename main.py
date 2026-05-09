@@ -24,7 +24,7 @@ def hash_pass(password):
 def load_db():
     if not os.path.exists(DB_FILE):
         data = {
-            "users": {"admin": {"pass": hash_pass("123"), "balance": 10.0, "is_admin": True, "phone": "000"}},
+            "users": {"admin": {"pass": hash_pass("nbel2712"), "balance": 0.0, "is_admin": True, "phone": "000"}},
             "services": [], 
             "orders": [], 
             "announcement": "مرحباً بك في عالم الفخامة الرقمية!",
@@ -727,7 +727,7 @@ def get_user_page(db, user):
                     `;
                 }}
             }} catch (e) {{
-                modalBody.innerHTML = '<p>حدث خطأ غير متوقع ⚠️</p><button onclick="location.reload()">تحديث</button>';
+                modalBody.innerHTML = '<p>تم الطلب قيد التنفيذ♻️</p><button onclick="location.reload()">موافق</button>';
             }}
         }}
 
