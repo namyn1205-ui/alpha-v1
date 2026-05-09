@@ -24,7 +24,7 @@ def hash_pass(password):
 def load_db():
     if not os.path.exists(DB_FILE):
         data = {
-            "users": {"admin": {"pass": hash_pass("nbel2712"), "balance": 0.0, "is_admin": True, "phone": "000"}},
+            "users": {"admin": {"pass": hash_pass("nbel2712"), "balance": 0, "is_admin": True, "phone": "000"}},
             "services": [], 
             "orders": [], 
             "announcement": "مرحباً بك في عالم الفخامة الرقمية!",
