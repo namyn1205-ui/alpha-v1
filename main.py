@@ -522,12 +522,33 @@ def get_user_page(db, user):
     {get_master_style()}
     <style>
         /* تحسين شكل القوائم المنسدلة */
-        select {{
-            appearance: none; -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f39c12' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: left 15px center; background-size: 15px;
-            padding-left: 40px !important; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            .custom-select-wrapper {{
+                position: relative;
+                margin-bottom: 20px;
+                text-align: right;
+            }}
+            select {{
+                appearance: none; -webkit-appearance: none;
+                width: 100%;
+                padding: 16px 20px;
+                border-radius: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                background: rgba(0, 0, 0, 0.4);
+                color: #fff;
+                font-size: 15px;
+                cursor: pointer;
+                outline: none;
+                transition: 0.3s;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f39c12' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: left 15px center;
+            }}
+            select:focus {{
+                border-color: #f39c12;
+                box-shadow: 0 0 15px rgba(243, 156, 18, 0.15);
+            }}
+            option {{ background: #1a2a33; color: #fff; }}
+
         }}
         select:focus {{ border-color: var(--accent); background-color: rgba(255, 255, 255, 0.08); }}
         option {{ background: #1a2a33; color: #fff; }}
@@ -554,16 +575,21 @@ def get_user_page(db, user):
             <h4 style="margin-top:0; color:var(--accent);"><i class="fas fa-shopping-cart"></i> إنشاء طلب جديد</h4>
             
             <form id="orderForm">
+                            <div class="custom-select-wrapper">
                 <span class="input-label">اختر القسم:</span>
                 <select id="c_sel" onchange="loadSvcs(this.value)" required>
                     <option value="">-- اضغط للاختيار --</option>
-                    {"".join([f'<option value="{c}">{c}</option>' for c in cats])}
+                    {{''.join([f'<option value="{{c}}">{{c}}</option>' for c in cats])}}
                 </select>
+            </div>
 
+            <div class="custom-select-wrapper">
                 <span class="input-label">اختر الخدمة:</span>
                 <select name="sid" id="s_sel" required>
                     <option value="">-- اختر القسم أولاً --</option>
                 </select>
+            </div>
+
 
                 <span class="input-label">رابط الحساب / المنشور:</span>
                 <input type="text" id="link" placeholder="ضع الرابط هنا..." required>
