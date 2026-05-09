@@ -850,7 +850,7 @@ class SpiderServer(http.server.BaseHTTPRequestHandler):
                 save_db(db); go("/admin_panel")
 
 
-            res(get_user_page(db, user))
+        res(get_user_page(db, user))
 
 
 if __name__ == "__main__":
