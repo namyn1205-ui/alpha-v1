@@ -512,137 +512,236 @@ def get_admin_page(db):
         <script>function searchUsers(){{ let input=document.getElementById('userInput').value.toLowerCase(); let rows=document.querySelectorAll('.user-row[data-name]'); rows.forEach(row=>{{ let name=row.getAttribute('data-name').toLowerCase(); row.style.display=name.includes(input)?"flex":"none"; }}); }}</script>
     </body></html>"""
 
-def get_user_page(db, user):
-    u = db["users"][user]
-    svcs = db.get("services", [])
-    user_orders = [o for o in db.get("orders", []) if o.get('user') == user]
-    cats = sorted(list(set([s['cat'] for s in svcs])))
-    
-    return f"""<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8">
-    {get_master_style()}
-    <style>
-        /* تحسين شكل القوائم المنسدلة */
-        select {{
-            appearance: none; -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f39c12' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: left 15px center; background-size: 15px;
-            padding-left: 40px !important; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }}
-        select:focus {{ border-color: var(--accent); background-color: rgba(255, 255, 255, 0.08); }}
-        option {{ background: #1a2a33; color: #fff; }}
-        
-        .input-label {{ font-size: 13px; color: var(--accent); margin: 15px 10px 5px 0; display: block; font-weight: bold; }}
-        
-        /* انيميشن النافذة الزجاجية */
-        @keyframes slideUp {{ from {{ transform: translateY(50px); opacity:0; }} to {{ transform: translateY(0); opacity:1; }} }}
-        .modal-detail-row {{ display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:14px; }}
-    </style>
-    </head><body>
-        <div class="header">
-            <div style="font-weight:900; color:var(--accent); font-size:22px;">{SITE_NAME}</div>
-            <a href="/settings" style="color:white; font-size:24px;"><i class="fas fa-cog"></i></a>
-        </div>
-        
-        <div class="stats-grid" style="margin-top:20px;">
-            <div class="stat-item"><i class="fas fa-wallet"></i><div class="stat-label">رصيدك</div><div class="stat-value">${u['balance']:.2f}</div></div>
-            <div class="stat-item"><i class="fas fa-shopping-bag"></i><div class="stat-label">طلباتك</div><div class="stat-value">{len(user_orders)}</div></div>
-            <div class="stat-item"><i class="fas fa-star"></i><div class="stat-label">الفئة</div><div class="stat-value">VIP</div></div>
-        </div>
-
-        <div class="card">
-            <h4 style="margin-top:0; color:var(--accent);"><i class="fas fa-shopping-cart"></i> إنشاء طلب جديد</h4>
+def get_user_page(user_data, orders, SITE_NAME):
+    return f"""
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
             
-            <form id="orderForm">
-                <span class="input-label">اختر القسم:</span>
-                <select id="c_sel" onchange="loadSvcs(this.value)" required>
-                    <option value="">-- اضغط للاختيار --</option>
-                    {"".join([f'<option value="{c}">{c}</option>' for c in cats])}
-                </select>
+            :root {{
+                --gold: #f39c12;
+                --dark-bg: #030712;
+                --glass-bg: rgba(255, 255, 255, 0.03);
+                --border: rgba(255, 255, 255, 0.08);
+                --success: #2ecc71;
+                --waiting: #f1c40f;
+            }}
 
-                <span class="input-label">اختر الخدمة:</span>
-                <select name="sid" id="s_sel" required>
-                    <option value="">-- اختر القسم أولاً --</option>
-                </select>
+            * {{ box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }}
+            html, body {{ width: 100vw; background: var(--dark-bg); color: #fff; overflow-x: hidden; }}
 
-                <span class="input-label">رابط الحساب / المنشور:</span>
-                <input type="text" id="link" placeholder="ضع الرابط هنا..." required>
+            .main-wrapper {{ padding: 20px; display: flex; flex-direction: column; align-items: center; width: 100%; }}
+
+            /* كرت إنشاء الطلب */
+            .order-card {{
+                background: var(--glass-bg);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid var(--border);
+                border-radius: 35px;
+                padding: 25px;
+                width: 100%;
+                max-width: 450px;
+                box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+                margin-bottom: 30px;
+            }}
+
+            h3 {{ color: var(--gold); text-align: center; margin-bottom: 25px; font-weight: 900; }}
+
+            /* تنسيق القوائم والمدخلات */
+            .field-group {{ margin-bottom: 20px; position: relative; }}
+            label {{ display: block; margin-bottom: 8px; font-size: 13px; color: rgba(255,255,255,0.6); margin-right: 10px; }}
+            
+            select, input {{
+                width: 100%;
+                padding: 16px 18px;
+                border-radius: 18px;
+                border: 1px solid var(--border);
+                background: rgba(0,0,0,0.4);
+                color: #fff;
+                font-size: 15px;
+                outline: none;
+                transition: 0.3s;
+                appearance: none;
+            }}
+
+            select {{
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f39c12' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: left 15px center;
+                cursor: pointer;
+            }}
+
+            input:focus, select:focus {{ border-color: var(--gold); background: rgba(243, 156, 18, 0.05); }}
+
+            /* زر التكلفة الذكي */
+            #cost-display {{
+                display: none;
+                background: rgba(243, 156, 18, 0.1);
+                border: 1px dashed var(--gold);
+                padding: 12px;
+                border-radius: 15px;
+                text-align: center;
+                margin-bottom: 15px;
+                animation: slideDown 0.3s ease;
+            }}
+            @keyframes slideDown {{ from {{ opacity: 0; transform: translateY(-10px); }} to {{ opacity: 1; transform: translateY(0); }} }}
+
+            .action-btn {{
+                width: 100%;
+                padding: 18px;
+                border-radius: 20px;
+                border: none;
+                background: linear-gradient(135deg, #f39c12, #e67e22);
+                color: #000;
+                font-weight: 900;
+                font-size: 17px;
+                cursor: pointer;
+                box-shadow: 0 10px 20px rgba(243, 156, 18, 0.2);
+            }}
+
+            /* قائمة طلباتي */
+            .orders-list {{ width: 100%; max-width: 450px; }}
+            .order-item {{
+                background: rgba(255,255,255,0.02);
+                border: 1px solid var(--border);
+                border-radius: 25px;
+                padding: 20px;
+                margin-bottom: 15px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }}
+
+            .status-badge {{
+                display: inline-block;
+                padding: 5px 15px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 700;
+                width: fit-content;
+            }}
+            .status-executing {{ background: rgba(241, 196, 15, 0.1); color: #f1c40f; border: 1px solid #f1c40f; }}
+            .status-completed {{ background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid #2ecc71; }}
+            .status-pending {{ background: rgba(52, 152, 219, 0.1); color: #3498db; border: 1px solid #3498db; }}
+
+            .order-info {{ display: flex; justify-content: space-between; align-items: center; }}
+            .order-id {{ color: var(--gold); font-size: 14px; font-weight: bold; }}
+            .order-date {{ font-size: 12px; color: rgba(255,255,255,0.3); }}
+        </style>
+    </head>
+    <body>
+        <div class="main-wrapper">
+            
+            <div class="order-card">
+                <h3><i class="fas fa-magic"></i> إنشاء طلب سريع</h3>
                 
-                <span class="input-label">الكمية المطلوبة:</span>
-                <input type="number" id="qty" placeholder="أدخل الكمية..." required>
-                
-                <button type="button" onclick="submitOrder()" class="btn-send" style="margin-top:25px;">
-                    <i class="fas fa-bolt"></i> تنفيذ الطلب الآن
-                </button>
-            </form>
-        </div>
+                <form id="orderForm">
+                    <div class="field-group">
+                        <label>القسم الرئيسي:</label>
+                        <select id="cat" onchange="updateServices()">
+                            <option value="" disabled selected>-- اختر القسم --</option>
+                            <option value="insta">خدمات إنستقرام VIP</option>
+                            <option value="tiktok">خدمات تيك توك فوري</option>
+                        </select>
+                    </div>
 
-        <div id="orderModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:9999; align-items:center; justify-content:center;">
-            <div class="card" id="modalBody" style="width:88%; max-width:380px; text-align:center; animation: slideUp 0.4s ease-out; border:1px solid rgba(243, 156, 18, 0.3);">
+                    <div class="field-group">
+                        <label>الخدمة المطلوبة:</label>
+                        <select id="ser">
+                            <option value="" disabled selected>-- اختر القسم أولاً --</option>
+                        </select>
+                    </div>
+
+                    <div class="field-group">
+                        <label>رابط الحساب / المنشور:</label>
+                        <input type="text" placeholder="https://instagram.com/..." required>
+                    </div>
+
+                    <div class="field-group">
+                        <label>الكمية المطلوبة:</label>
+                        <input type="number" id="qty" placeholder="مثال: 1000" oninput="calculateCost()">
+                    </div>
+
+                    <div id="cost-display">
+                        <span style="font-size: 13px; color: #fff;">التكلفة الإجمالية:</span>
+                        <span id="price-tag" style="color: var(--gold); font-weight: 900; font-size: 18px; margin-right: 5px;">0.00</span>
+                        <span style="color: var(--gold);">$</span>
+                    </div>
+
+                    <button type="submit" class="action-btn">إرسال الطلب الآن <i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+
+            <div class="orders-list">
+                <h3 style="text-align: right; font-size: 18px;"><i class="fas fa-history"></i> سجل طلباتي</h3>
+                
+                <!-- مثال لطلب قيد التنفيذ -->
+                <div class="order-item">
+                    <div class="order-info">
+                        <span class="order-id">#88271</span>
+                        <span class="status-badge status-executing">قيد التنفيذ</span>
+                    </div>
+                    <div style="font-size: 14px;">متابعين انستقرام - ضمان 30 يوم</div>
+                    <div class="order-date">2026-05-09 10:30 AM</div>
                 </div>
-        </div>
 
-        <div class="bottom-nav">
-            <a href="/" class="nav-item active"><i class="fas fa-home"></i>الرئيسية</a>
-            <a href="https://t.me/{TELEGRAM_USER}" class="nav-item"><i class="fab fa-telegram"></i>الدعم الفني</a>
+                <!-- مثال لطلب جاري التنفيذ (تنفيذ) -->
+                <div class="order-item">
+                    <div class="order-info">
+                        <span class="order-id">#88250</span>
+                        <span class="status-badge status-pending">جاري التنفيذ</span>
+                    </div>
+                    <div style="font-size: 14px;">لايكات تيك توك حقيقية</div>
+                    <div class="order-date">2026-05-08 09:15 PM</div>
+                </div>
+
+                <!-- مثال لطلب مكتمل -->
+                <div class="order-item">
+                    <div class="order-info">
+                        <span class="order-id">#88210</span>
+                        <span class="status-badge status-completed">مكتمل</span>
+                    </div>
+                    <div style="font-size: 14px;">مشاهدات ريلز إنستقرام</div>
+                    <div class="order-date">2026-05-07 04:00 PM</div>
+                </div>
+            </div>
+
         </div>
 
         <script>
-            const data = {json.dumps(svcs)};
-            
-            function loadSvcs(c){{
-                const s = document.getElementById('s_sel'); 
-                s.innerHTML = '<option value="">اختر الخدمة...</option>';
-                data.filter(i => i.cat === c).forEach(i => {{
-                    let o = document.createElement('option'); 
-                    o.value = i.id; 
-                    o.textContent = i.name + " ($" + i.price + ")"; 
-                    s.appendChild(o);
-                }});
+            // محاكاة تغيير الخدمات بناءً على القسم
+            function updateServices() {{
+                const s = document.getElementById('ser');
+                s.innerHTML = '<option value="1">خدمة سريعة - 0.5$ لكل 1000</option><option value="2">خدمة VIP - 1.2$ لكل 1000</option>';
             }}
 
-            async function submitOrder() {{
-                const modal = document.getElementById('orderModal');
-                const modalBody = document.getElementById('modalBody');
-                const sid = document.getElementById('s_sel').value;
+            // حساب التكلفة وإظهار القائمة بشكل بسيط
+            function calculateCost() {{
                 const qty = document.getElementById('qty').value;
-                const link = document.getElementById('link').value;
-
-                if(!sid || !qty || !link) {{ alert('أكمل البيانات أولاً صديقي!'); return; }}
-
-                modal.style.display = 'flex';
-                modalBody.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:45px; color:var(--accent); margin-bottom:15px;"></i><p>جاري فحص الرصيد وإرسال الطلب...</p>';
-
-                try {{
-                    const response = await fetch(`/place_order_api?sid=${{sid}}&qty=${{qty}}&link=${{link}}`);
-                    const res = await response.json();
-
-                    if(res.status === 'success') {{
-                        modalBody.innerHTML = `
-                            <i class="fas fa-check-circle" style="font-size:60px; color:#2ecc71; margin-bottom:15px;"></i>
-                            <h2 style="margin:0;">تم الطلب!</h2>
-                            <div style="margin:20px 0; background:rgba(255,255,255,0.05); padding:15px; border-radius:20px; text-align:right;">
-                                <div class="modal-detail-row"><span>الخدمة:</span> <span>${{res.svc_name}}</span></div>
-                                <div class="modal-detail-row"><span>الكمية:</span> <span>${{qty}}</span></div>
-                                <div class="modal-detail-row"><span>التكلفة:</span> <span style="color:#2ecc71;">${{res.cost}}$</span></div>
-                                <div class="modal-detail-row"><span>رقم العملية:</span> <span>#${{res.order_id}}</span></div>
-                            </div>
-                            <button onclick="location.reload()" class="btn-send" style="margin:0;">موافق، شكراً</button>
-                        `;
-                    }} else {{
-                        modalBody.innerHTML = `
-                            <i class="fas fa-exclamation-circle" style="font-size:60px; color:#ff4757; margin-bottom:15px;"></i>
-                            <h3 style="margin:0;">فشل الطلب</h3>
-                            <p style="color:rgba(255,255,255,0.7); margin:15px 0;">${{res.message}}</p>
-                            <button onclick="document.getElementById('orderModal').style.display='none'" class="btn-send" style="margin:0; background:#ff4757; color:white;">حاول مرة أخرى</button>
-                        `;
-                    }}
-                }} catch (e) {{
-                    modalBody.innerHTML = '<p>تم تنفيذ الطلب قيد الانتظار ♻️</p><button onclick="location.reload()" class="btn-send">تحديث</button>';
+                const display = document.getElementById('cost-display');
+                const priceTag = document.getElementById('price-tag');
+                
+                if(qty > 0) {{
+                    const cost = (qty * 0.0005).toFixed(3); // مثال لسعر وهمي
+                    priceTag.innerText = cost;
+                    display.style.display = 'block';
+                }} else {{
+                    display.style.display = 'none';
                 }}
             }}
         </script>
-    </body></html>"""
+    </body>
+    </html>
+    """
+
+            
+
 
 
 # --- [ 5. محرك السيرفر ] ---
