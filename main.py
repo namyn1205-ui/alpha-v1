@@ -506,9 +506,19 @@ def get_admin_page(db):
         <div class="card">
             <h4><i class="fas fa-trash-alt"></i> حذف الخدمات</h4>
             <div style="max-height: 200px; overflow-y: auto;">
-                {"".join([f'<div class="user-row"><span>{s["name"]}</span><a href="/admin_action?type=del_svc&id={s["id"]}" style="color:#ff4757; text-decoration:none;">حذف</a></div>' for s in services])}
+                {"".join([f'''
+                <div class="user-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span>{s['name']}</span>
+                    <a href="/admin_action?type=del_svc&id={s['id']}" 
+                       onclick="return confirm('هل أنت متأكد من حذف هذه الخدمة؟')" 
+                       style="color: #ff4757; text-decoration: none; font-weight: bold; font-size: 13px;">
+                       حذف <i class="fas fa-times-circle"></i>
+                    </a>
+                </div>
+                ''' for s in db.get("services", [])])}
             </div>
         </div>
+
         <script>function searchUsers(){{ let input=document.getElementById('userInput').value.toLowerCase(); let rows=document.querySelectorAll('.user-row[data-name]'); rows.forEach(row=>{{ let name=row.getAttribute('data-name').toLowerCase(); row.style.display=name.includes(input)?"flex":"none"; }}); }}</script>
     </body></html>"""
 
