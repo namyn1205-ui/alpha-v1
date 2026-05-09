@@ -504,14 +504,15 @@ def get_admin_page(db):
             </div>
         </div>
         <div class="card">
-            <h4><i class="fas fa-trash-alt"></i> حذف الخدمات</h4>
-            <div style="max-height: 200px; overflow-y: auto;">
+        <div class="card" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 20px; margin-top: 15px;">
+            <h4 style="color: #f39c12; margin-bottom: 15px;"><i class="fas fa-trash-alt"></i> حذف الخدمات</h4>
+            <div style="max-height: 250px; overflow-y: auto;">
                 {"".join([f'''
-                <div class="user-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <span>{s['name']}</span>
+                <div class="user-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); background: rgba(0,0,0,0.2); margin-bottom: 8px; border-radius: 12px;">
+                    <span style="color: #fff; font-size: 14px;">{s['name']}</span>
                     <a href="/admin_action?type=del_svc&id={s['id']}" 
-                       onclick="return confirm('هل أنت متأكد من حذف هذه الخدمة؟')" 
-                       style="color: #ff4757; text-decoration: none; font-weight: bold; font-size: 13px;">
+                       onclick="return confirm('هل أنت متأكد من الحذف؟')" 
+                       style="color: #ff4757; text-decoration: none; font-weight: bold; font-size: 12px; border: 1px solid #ff4757; padding: 5px 10px; border-radius: 8px;">
                        حذف <i class="fas fa-times-circle"></i>
                     </a>
                 </div>
@@ -519,8 +520,20 @@ def get_admin_page(db):
             </div>
         </div>
 
-        <script>function searchUsers(){{ let input=document.getElementById('userInput').value.toLowerCase(); let rows=document.querySelectorAll('.user-row[data-name]'); rows.forEach(row=>{{ let name=row.getAttribute('data-name').toLowerCase(); row.style.display=name.includes(input)?"flex":"none"; }}); }}</script>
-    </body></html>"""
+        <script>
+        // لاحظ الأقواس المزدوجة هنا لإصلاح خطأ Railway
+        function searchUsers() {{ 
+            let input = document.getElementById('userInput').value.toLowerCase();
+            let rows = document.querySelectorAll('.user-row');
+            rows.forEach(row => {{
+                row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none';
+            }});
+        }}
+        </script>
+    </body>
+    </html>
+    """
+
 
 def get_user_page(db, user):
     u = db["users"][user]
