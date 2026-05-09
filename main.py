@@ -838,7 +838,7 @@ class SpiderServer(http.server.BaseHTTPRequestHandler):
                 if svc_id:
                     db['services'] = [s for s in db.get('services', []) if str(s.get('id')) != str(svc_id)]
                     save_db(db)
-                 go("/admin_panel")
+                go("/admin_panel")
 
         elif t == "add_full_svc":
                 new_id = str(len(db.get('services', [])) + 1)
