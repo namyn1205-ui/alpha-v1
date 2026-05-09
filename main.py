@@ -517,158 +517,221 @@ def get_user_page(db, user):
     svcs = db.get("services", [])
     user_orders = [o for o in db.get("orders", []) if o.get('user') == user]
     cats = sorted(list(set([s['cat'] for s in svcs])))
-    
-    return f"""<!DOCTYPE html><html lang="ar"><head><meta charset="UTF-8">
-    {get_master_style()}
-    <style>
-        /* تحسين شكل القوائم المنسدلة */
-            .custom-select-wrapper {{
-                position: relative;
-                margin-bottom: 20px;
-                text-align: right;
-            }}
-            select {{
-                appearance: none; -webkit-appearance: none;
-                width: 100%;
-                padding: 16px 20px;
-                border-radius: 20px;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                background: rgba(0, 0, 0, 0.4);
-                color: #fff;
-                font-size: 15px;
-                cursor: pointer;
-                outline: none;
-                transition: 0.3s;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f39c12' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-                background-repeat: no-repeat;
-                background-position: left 15px center;
-            }}
-            select:focus {{
-                border-color: #f39c12;
-                box-shadow: 0 0 15px rgba(243, 156, 18, 0.15);
-            }}
-            option {{ background: #1a2a33; color: #fff; }}
 
+    return f"""<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {get_master_style()}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* تحسين شكل القوائم المنسدلة المجمّلة */
+        .custom-dropdown {{
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: right;
         }}
-        select:focus {{ border-color: var(--accent); background-color: rgba(255, 255, 255, 0.08); }}
-        option {{ background: #1a2a33; color: #fff; }}
+
+        .dropdown-selected {{
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }}
+
+        .dropdown-selected:hover {{ border-color: var(--accent); }}
+
+        .dropdown-options {{
+            position: absolute;
+            top: 110%;
+            left: 0;
+            width: 100%;
+            background: #1a2a33;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }}
+
+        .option-item {{
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 14px;
+        }}
+
+        .option-item:hover {{ background: rgba(243, 156, 18, 0.1); color: var(--accent); }}
+        .option-item img {{ width: 22px; height: 22px; border-radius: 5px; }}
         
-        .input-label {{ font-size: 13px; color: var(--accent); margin: 15px 10px 5px 0; display: block; font-weight: bold; }}
-        
+        .show {{ display: block !important; }}
+
         /* انيميشن النافذة الزجاجية */
         @keyframes slideUp {{ from {{ transform: translateY(50px); opacity:0; }} to {{ transform: translateY(0); opacity:1; }} }}
-        .modal-detail-row {{ display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:14px; }}
+        .modal-detail-row {{ display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }}
     </style>
-    </head><body>
-        <div class="header">
-            <div style="font-weight:900; color:var(--accent); font-size:22px;">{SITE_NAME}</div>
-            <a href="/settings" style="color:white; font-size:24px;"><i class="fas fa-cog"></i></a>
-        </div>
+</head>
+<body>
+    <div class="header">
+        <div style="font-weight:900; color:var(--accent); font-size:22px;">{SITE_NAME}</div>
+        <a href="/settings" style="color:white; font-size:24px;"><i class="fas fa-cog"></i></a>
+    </div>
+
+    <div class="stats-grid" style="margin-top:20px;">
+        <div class="stat-item"><i class="fas fa-wallet"></i><div class="stat-label">رصيدك</div><div class="stat-value">${u.get('balance', 0)}</div></div>
+        <div class="stat-item"><i class="fas fa-shopping-bag"></i><div class="stat-label">الطلبات</div><div class="stat-value">{len(user_orders)}</div></div>
+        <div class="stat-item"><i class="fas fa-star"></i><div class="stat-label">الفئة</div><div class="stat-value">VIP</div></div>
+    </div>
+
+    <div class="card">
+        <h4 style="margin-top:0; color:var(--accent);"><i class="fas fa-shopping-cart"></i> إنشاء طلب جديد</h4>
         
-        <div class="stats-grid" style="margin-top:20px;">
-            <div class="stat-item"><i class="fas fa-wallet"></i><div class="stat-label">رصيدك</div><div class="stat-value">${u['balance']:.2f}</div></div>
-            <div class="stat-item"><i class="fas fa-shopping-bag"></i><div class="stat-label">طلباتك</div><div class="stat-value">{len(user_orders)}</div></div>
-            <div class="stat-item"><i class="fas fa-star"></i><div class="stat-label">الفئة</div><div class="stat-value">VIP</div></div>
-        </div>
-
-        <div class="card">
-            <h4 style="margin-top:0; color:var(--accent);"><i class="fas fa-shopping-cart"></i> إنشاء طلب جديد</h4>
-            
-            <form id="orderForm">
-                            <div class="custom-select-wrapper">
-                <span class="input-label">اختر القسم:</span>
-                <select id="c_sel" onchange="loadSvcs(this.value)" required>
-                    <option value="">-- اضغط للاختيار --</option>
-                    {{''.join([f'<option value="{{c}}">{{c}}</option>' for c in cats])}}
-                </select>
-            </div>
-
-            <div class="custom-select-wrapper">
-                <span class="input-label">اختر الخدمة:</span>
-                <select name="sid" id="s_sel" required>
-                    <option value="">-- اختر القسم أولاً --</option>
-                </select>
-            </div>
-
-
-                <span class="input-label">رابط الحساب / المنشور:</span>
-                <input type="text" id="link" placeholder="ضع الرابط هنا..." required>
-                
-                <span class="input-label">الكمية المطلوبة:</span>
-                <input type="number" id="qty" placeholder="أدخل الكمية..." required>
-                
-                <button type="button" onclick="submitOrder()" class="btn-send" style="margin-top:25px;">
-                    <i class="fas fa-bolt"></i> تنفيذ الطلب الآن
-                </button>
-            </form>
-        </div>
-
-        <div id="orderModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:9999; align-items:center; justify-content:center;">
-            <div class="card" id="modalBody" style="width:88%; max-width:380px; text-align:center; animation: slideUp 0.4s ease-out; border:1px solid rgba(243, 156, 18, 0.3);">
+        <form id="orderForm">
+            <!-- قائمة الأقسام المجمّلة -->
+            <span class="input-label">اختر القسم:</span>
+            <div class="custom-dropdown">
+                <div class="dropdown-selected" onclick="toggleDrop('cat-drop')">
+                    <span id="cat-text">-- اضغط للاختيار --</span>
+                    <i class="fas fa-chevron-down"></i>
                 </div>
-        </div>
+                <div class="dropdown-options" id="cat-drop">
+                    {" ".join([f'<div class="option-item" onclick="selectCat(\'{c}\')"><span>{c}</span></div>' for c in cats])}
+                </div>
+            </div>
 
-        <div class="bottom-nav">
-            <a href="/" class="nav-item active"><i class="fas fa-home"></i>الرئيسية</a>
-            <a href="https://t.me/{TELEGRAM_USER}" class="nav-item"><i class="fab fa-telegram"></i>الدعم الفني</a>
-        </div>
+            <!-- قائمة الخدمات المجمّلة -->
+            <span class="input-label">اختر الخدمة:</span>
+            <div class="custom-dropdown">
+                <div class="dropdown-selected" onclick="toggleDrop('svc-drop')">
+                    <span id="svc-text">-- اختر القسم أولاً --</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="dropdown-options" id="svc-drop">
+                    <!-- يتم تعبئتها بواسطة JS -->
+                </div>
+            </div>
 
-        <script>
-            const data = {json.dumps(svcs)};
+            <input type="hidden" id="s_sel" name="sid">
+
+            <span class="input-label">رابط الحساب / المنشور:</span>
+            <input type="text" id="link" placeholder="ضع الرابط هنا..." required class="input-field" style="width:100%; padding:16px; border-radius:20px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#fff; margin-bottom:20px; outline:none;">
+
+            <span class="input-label">الكمية المطلوبة:</span>
+            <input type="number" id="qty" placeholder="أدخل الكمية..." required class="input-field" style="width:100%; padding:16px; border-radius:20px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#fff; margin-bottom:20px; outline:none;">
+
+            <button type="button" onclick="submitOrder()" class="btn-send" style="width:100%; padding:18px; border-radius:22px; background:var(--accent); color:#000; font-weight:900; border:none; cursor:pointer;">
+                <i class="fas fa-bolt"></i> تنفيذ الطلب الآن
+            </button>
+        </form>
+    </div>
+
+    <div id="orderModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; align-items:center; justify-content:center;">
+        <div class="card" id="modalBody" style="width:88%; max-width:380px; text-align:center; animation:slideUp 0.4s ease;">
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="/" class="nav-item active"><i class="fas fa-home"></i>الرئيسية</a>
+        <a href="https://t.me/{TELEGRAM_USER}" class="nav-item"><i class="fab fa-telegram"></i>الدعم</a>
+    </div>
+
+    <script>
+        const data = {json.dumps(svcs)};
+
+        function toggleDrop(id) {{
+            document.getElementById(id).classList.toggle('show');
+        }}
+
+        function selectCat(val) {{
+            document.getElementById('cat-text').innerText = val;
+            toggleDrop('cat-drop');
+            loadSvcs(val);
+        }}
+
+        function loadSvcs(c) {{
+            const sList = document.getElementById('svc-drop');
+            const sText = document.getElementById('svc-text');
+            sList.innerHTML = '';
+            sText.innerText = '-- اختر الخدمة --';
             
-            function loadSvcs(c){{
-                const s = document.getElementById('s_sel'); 
-                s.innerHTML = '<option value="">اختر الخدمة...</option>';
-                data.filter(i => i.cat === c).forEach(i => {{
-                    let o = document.createElement('option'); 
-                    o.value = i.id; 
-                    o.textContent = i.name + " ($" + i.price + ")"; 
-                    s.appendChild(o);
-                }});
-            }}
+            data.filter(i => i.cat === c).forEach(i => {{
+                let div = document.createElement('div');
+                div.className = 'option-item';
+                div.innerHTML = `<span>${{i.name}} (${{i.price}}$)</span>`;
+                div.onclick = function() {{
+                    document.getElementById('s_sel').value = i.id;
+                    sText.innerText = i.name;
+                    toggleDrop('svc-drop');
+                }};
+                sList.appendChild(div);
+            }});
+        }}
 
-            async function submitOrder() {{
-                const modal = document.getElementById('orderModal');
-                const modalBody = document.getElementById('modalBody');
-                const sid = document.getElementById('s_sel').value;
-                const qty = document.getElementById('qty').value;
-                const link = document.getElementById('link').value;
+        async function submitOrder() {{
+            const modal = document.getElementById('orderModal');
+            const modalBody = document.getElementById('modalBody');
+            const sid = document.getElementById('s_sel').value;
+            const qty = document.getElementById('qty').value;
+            const link = document.getElementById('link').value;
 
-                if(!sid || !qty || !link) {{ alert('أكمل البيانات أولاً صديقي!'); return; }}
+            if(!sid || !qty || !link) {{ alert('أكمل البيانات أولاً صديقي!'); return; }}
 
-                modal.style.display = 'flex';
-                modalBody.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:45px; color:var(--accent); margin-bottom:15px;"></i><p>جاري فحص الرصيد وإرسال الطلب...</p>';
+            modal.style.display = 'flex';
+            modalBody.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:45px; color:var(--accent);"></i>';
 
-                try {{
-                    const response = await fetch(`/place_order_api?sid=${{sid}}&qty=${{qty}}&link=${{link}}`);
-                    const res = await response.json();
+            try {{
+                const response = await fetch(`/place_order_api?sid=${{sid}}&qty=${{qty}}&link=${{link}}`);
+                const res = await response.json();
 
-                    if(res.status === 'success') {{
-                        modalBody.innerHTML = `
-                            <i class="fas fa-check-circle" style="font-size:60px; color:#2ecc71; margin-bottom:15px;"></i>
-                            <h2 style="margin:0;">تم الطلب!</h2>
-                            <div style="margin:20px 0; background:rgba(255,255,255,0.05); padding:15px; border-radius:20px; text-align:right;">
-                                <div class="modal-detail-row"><span>الخدمة:</span> <span>${{res.svc_name}}</span></div>
-                                <div class="modal-detail-row"><span>الكمية:</span> <span>${{qty}}</span></div>
-                                <div class="modal-detail-row"><span>التكلفة:</span> <span style="color:#2ecc71;">${{res.cost}}$</span></div>
-                                <div class="modal-detail-row"><span>رقم العملية:</span> <span>#${{res.order_id}}</span></div>
-                            </div>
-                            <button onclick="location.reload()" class="btn-send" style="margin:0;">موافق، شكراً</button>
-                        `;
-                    }} else {{
-                        modalBody.innerHTML = `
-                            <i class="fas fa-exclamation-circle" style="font-size:60px; color:#ff4757; margin-bottom:15px;"></i>
-                            <h3 style="margin:0;">فشل الطلب</h3>
-                            <p style="color:rgba(255,255,255,0.7); margin:15px 0;">${{res.message}}</p>
-                            <button onclick="document.getElementById('orderModal').style.display='none'" class="btn-send" style="margin:0; background:#ff4757; color:white;">حاول مرة أخرى</button>
-                        `;
-                    }}
-                }} catch (e) {{
-                    modalBody.innerHTML = '<p>تم تنفيذ الطلب قيد الانتظار ♻️</p><button onclick="location.reload()" class="btn-send">تحديث</button>';
+                if(res.status === 'success') {{
+                    modalBody.innerHTML = `
+                        <i class="fas fa-check-circle" style="font-size:60px; color:#2ecc71"></i>
+                        <h2 style="margin:10px 0;">تم الطلب!</h2>
+                        <div style="margin:20px 0; background:rgba(255,255,255,0.05); padding:15px; border-radius:15px;">
+                            <div class="modal-detail-row"><span>الخدمة:</span> <span>${{res.service}}</span></div>
+                            <div class="modal-detail-row"><span>الكمية:</span> <span>${{qty}}</span></div>
+                            <div class="modal-detail-row"><span>التكلفة:</span> <span>${{res.cost}}$</span></div>
+                        </div>
+                        <button onclick="location.reload()" class="btn-send" style="width:100%; padding:12px; border-radius:15px; background:var(--accent); color:#000; font-weight:bold; border:none;">موافق</button>
+                    `;
+                }} else {{
+                    modalBody.innerHTML = `
+                        <i class="fas fa-exclamation-circle" style="font-size:60px; color:#e74c3c"></i>
+                        <h3 style="margin:10px 0;">فشل الطلب</h3>
+                        <p style="color:rgba(255,255,255,0.7); margin-bottom:20px;">${{res.message}}</p>
+                        <button onclick="document.getElementById('orderModal').style.display='none'" class="btn-send" style="width:100%; padding:12px; border-radius:15px; background:#e74c3c; color:#fff; border:none;">حاول مجدداً</button>
+                    `;
                 }}
+            }} catch (e) {{
+                modalBody.innerHTML = '<p>حدث خطأ غير متوقع ⚠️</p><button onclick="location.reload()">تحديث</button>';
             }}
-        </script>
-    </body></html>"""
+        }}
+
+        // إغلاق القوائم عند الضغط خارجها
+        window.onclick = function(event) {{
+            if (!event.target.closest('.custom-dropdown')) {{
+                document.querySelectorAll('.dropdown-options').forEach(d => d.classList.remove('show'));
+            }}
+        }}
+    </script>
+</body>
+</html>"""
+
+
 
 
 # --- [ 5. محرك السيرفر ] ---
